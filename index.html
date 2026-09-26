@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Main Dashboard</title>
+<meta name="description" content="One page linking every trading dashboard: live engines, scanners and paper trading.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f4f6fa; --surface: #ffffff; --surface-2: #eef1f7; --text: #141a26; --muted: #5a6478;
+  --border: #dde2ec; --accent: #2456d6; --shadow: 0 1px 2px rgba(20,26,38,.06), 0 4px 14px rgba(20,26,38,.05);
+  --live: #b45309; --live-bg: #fff1dc; --scan: #1d4ed8; --scan-bg: #e3ecff;
+  --paper: #6d28d9; --paper-bg: #efe6ff; --off: #5a6478; --off-bg: #e8ebf1; --stale: #b45309;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --surface: #161b24; --surface-2: #1d2430; --text: #e6eaf2; --muted: #98a2b6;
+    --border: #2a3242; --accent: #7aa2ff; --shadow: 0 1px 2px rgba(0,0,0,.4);
+    --live: #f5b45a; --live-bg: #3a2a12; --scan: #8db0ff; --scan-bg: #16264a;
+    --paper: #c4a5ff; --paper-bg: #2a1d4d; --off: #98a2b6; --off-bg: #232b39; --stale: #f5b45a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --surface: #161b24; --surface-2: #1d2430; --text: #e6eaf2; --muted: #98a2b6;
+  --border: #2a3242; --accent: #7aa2ff; --shadow: 0 1px 2px rgba(0,0,0,.4);
+  --live: #f5b45a; --live-bg: #3a2a12; --scan: #8db0ff; --scan-bg: #16264a;
+  --paper: #c4a5ff; --paper-bg: #2a1d4d; --off: #98a2b6; --off-bg: #232b39; --stale: #f5b45a;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 20px 16px 48px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 16px; margin-bottom: 8px; }
+h1 { margin: 0; font-size: 1.6rem; letter-spacing: -.01em; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
+.tools { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .85rem; }
+button.ghost {
+  font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 12px; cursor: pointer; min-height: 36px;
+}
+button.ghost:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+section { margin-top: 26px; }
+.group-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; }
+.group-head h2 { margin: 0; font-size: 1.02rem; }
+.group-head span { color: var(--muted); font-size: .85rem; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 720px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1080px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+.card {
+  position: relative; display: flex; flex-direction: column; gap: 8px; padding: 14px 14px 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+  transition: border-color .15s, transform .15s;
+}
+.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.name { margin: 0; font-size: 1.05rem; line-height: 1.25; }
+.name a { color: inherit; text-decoration: none; }
+.name a::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }  /* whole card is the link */
+.chip {
+  flex: none; font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+}
+.chip.live { color: var(--live); background: var(--live-bg); }
+.chip.scanner { color: var(--scan); background: var(--scan-bg); }
+.chip.paper { color: var(--paper); background: var(--paper-bg); }
+.chip.off { color: var(--off); background: var(--off-bg); }
+.desc { margin: 0; color: var(--muted); font-size: .9rem; }
+.meta { font-size: .8rem; color: var(--muted); min-height: 1.2em; }
+.meta.stale { color: var(--stale); font-weight: 600; }
+.links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 2px; }
+.links a {
+  position: relative; z-index: 1; font-size: .82rem; color: var(--accent); text-decoration: none;
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2);
+  min-height: 32px; display: inline-flex; align-items: center;
+}
+.links a:hover { border-color: var(--accent); }
+details.archive { margin-top: 30px; }
+details.archive > summary { cursor: pointer; color: var(--muted); font-weight: 600; padding: 8px 0; }
+details.archive .grid { margin-top: 10px; }
+footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; }
+footer code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .95em; }
+.err { margin-top: 20px; padding: 12px; border: 1px solid var(--stale); border-radius: 10px; color: var(--stale); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Main Dashboard</h1>
+      <p class="sub">Every trading dashboard in one place. Bookmark this page.</p>
+    </div>
+    <div class="tools">
+      <span id="clock" aria-live="off"></span>
+      <button class="ghost" id="refresh" type="button" title="Reload last-update times">Refresh</button>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer>
+    <div id="fresh-note">Last-update times come from each dashboard's most recent GitHub push (the scanners and paper engines push on every tick), so they are old outside market hours.</div>
+    <div style="margin-top:6px">To add a dashboard: add one entry to <code>DASHBOARDS</code> in this file, then run <code>publish.bat</code>. Every dashboard page carries a "Main dashboard" link back here (<code>link_back.py</code>).</div>
+  </footer>
+</div>
+
+<script>
+/* ============ REGISTRY: the one place that lists every dashboard ============
+   kind: live (real orders) | scanner (signals only) | paper | off (stale or retired)
+   repo: GitHub Pages repo under OWNER;  page: landing file ("" = index)
+   links: extra pages in the same site as [label, file]
+   note: shown instead of a description for entries in the archive section        */
+const OWNER = "aps-source";
+const DASHBOARDS = [
+  { kind: "live", repo: "nifty-cpr-ladder-dashboard", page: "", name: "Nifty 3-min CPR Ladder",
+    desc: "NIFTY + SENSEX tuned live engine - real orders.", links: [["Trades", "trades.html"]] },
+  { kind: "live", repo: "tv-composite-v7-dashboard", page: "", name: "TV Composite v7",
+    desc: "NIFTY + SENSEX ITM options from the TradingView composite - pre-checked, automatic ordering.",
+    links: [["Cockpit", "cockpit.html"], ["Trades", "trades.html"], ["F&O universe backtest", "universe.html"]] },
+
+  { kind: "scanner", repo: "mwd-scanner-dashboard", page: "stock_scanner_dashboard.html", name: "F&O Stocks MWD",
+    desc: "F&O stock option scanner - Monthly/Weekly/Daily CPR + EMA composite. Signals only.",
+    links: [["Signal log", "signal_log.html"]] },
+  { kind: "scanner", repo: "index-scanner-dashboard", page: "", name: "Index Scanner MWD",
+    desc: "NIFTY / BANKNIFTY / SENSEX index scanner. Signals only.", links: [["Signal log", "signal_log.html"]] },
+  { kind: "scanner", repo: "mcx-scanner-dashboard", page: "stock_scanner_dashboard.html", name: "MCX Stocks MWD",
+    desc: "MCX mini-futures scanner (crude, gold, silver, natural gas). Signals only.",
+    links: [["Signal log", "signal_log.html"]] },
+
+  { kind: "paper", repo: "orb30-paper-dashboard", page: "", name: "ORB30 Range Filter",
+    desc: "30-minute opening-range breakout with a range cap, NIFTY + SENSEX - paper trading.",
+    links: [["Trades", "trades.html"], ["Backtest", "backtest.html"]] },
+  { kind: "paper", repo: "hull-suite-paper-dashboard", page: "", name: "Hull Suite",
+    desc: "HMA / EHMA positional strategies, NIFTY + SENSEX - paper trading.",
+    links: [["Trades", "trades.html"], ["Backtest", "backtest.html"]] },
+
+  { kind: "off", repo: "astro-dashboard", page: "", name: "Astro",
+    note: "Time-triggered index option buying. Not updating: its source folder and scheduled task are gone." },
+  { kind: "off", repo: "gamma-blast-dashboard", page: "", name: "Gamma Blast", note: "Retired." },
+  { kind: "off", repo: "nifty-option-chain-dashboard", page: "", name: "NIFTY Gamma Blast + Theta engine", note: "Retired." },
+  { kind: "off", repo: "btc-delta-futures-dashboard", page: "", name: "BTC Delta Futures", note: "Retired." },
+  { kind: "off", repo: "lv-paper-dashboard", page: "", name: "Liquidity Vacuum", note: "Retired." },
+];
+const GROUPS = [
+  ["live", "Live trading", "real orders - handle with care"],
+  ["scanner", "Scanners", "signals only, no orders"],
+  ["paper", "Paper trading", "simulated fills"],
+];
+const KIND_LABEL = { live: "Live orders", scanner: "Signals", paper: "Paper", off: "Inactive" };
+const BASE = "https://" + OWNER + ".github.io/";
+const STALE_DAYS = 7;
+
+/* ============ rendering (no network needed) ============ */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const siteUrl = (d, file) => BASE + d.repo + "/" + (file === undefined ? d.page : file);
+
+function card(d) {
+  const links = (d.links || []).map(([label, file]) => `<a href="${esc(siteUrl(d, file))}">${esc(label)}</a>`).join("");
+  return `<article class="card" data-repo="${esc(d.repo)}">
+    <div class="top">
+      <h3 class="name"><a href="${esc(siteUrl(d))}">${esc(d.name)}</a></h3>
+      <span class="chip ${d.kind}">${KIND_LABEL[d.kind]}</span>
+    </div>
+    <p class="desc">${esc(d.desc || d.note || "")}</p>
+    <div class="meta" data-meta>&nbsp;</div>
+    ${links ? `<div class="links">${links}</div>` : ""}
+  </article>`;
+}
+
+function render() {
+  const app = document.getElementById("app");
+  let html = "";
+  for (const [kind, title, hint] of GROUPS) {
+    const items = DASHBOARDS.filter(d => d.kind === kind);
+    if (!items.length) continue;
+    html += `<section><div class="group-head"><h2>${esc(title)}</h2><span>${esc(hint)}</span></div>
+      <div class="grid">${items.map(card).join("")}</div></section>`;
+  }
+  const off = DASHBOARDS.filter(d => d.kind === "off");
+  if (off.length) {
+    html += `<details class="archive"><summary>Inactive and retired (${off.length})</summary>
+      <div class="grid">${off.map(card).join("")}</div></details>`;
+  }
+  app.innerHTML = html;
+}
+
+/* ============ clock + last-update times (best effort; page works without them) ============ */
+function tickClock() {
+  const f = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", weekday: "short", day: "2-digit", month: "short",
+    hour: "2-digit", minute: "2-digit", hour12: false });
+  document.getElementById("clock").textContent = f.format(new Date()) + " IST";
+}
+
+function ago(iso) {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 90) return "just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " h ago";
+  return Math.round(s / 86400) + " d ago";
+}
+const istStamp = iso => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short",
+  hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso)) + " IST";
+
+async function loadPushed(force) {
+  const KEY = "main_dashboard_repos_v1";
+  try {
+    if (!force) {
+      const c = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (c && Date.now() - c.t < 5 * 60 * 1000) return c.d;
+    }
+  } catch (e) { /* storage blocked: fine */ }
+  const r = await fetch("https://api.github.com/users/" + OWNER + "/repos?per_page=100", { headers: { Accept: "application/vnd.github+json" } });
+  if (!r.ok) throw new Error("GitHub API " + r.status);
+  const d = {};
+  (await r.json()).forEach(x => { d[x.name] = x.pushed_at; });
+  try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d })); } catch (e) { /* ignore */ }
+  return d;
+}
+
+async function refreshTimes(force) {
+  const note = document.getElementById("fresh-note");
+  try {
+    const pushed = await loadPushed(force);
+    document.querySelectorAll(".card").forEach(c => {
+      const iso = pushed[c.dataset.repo], m = c.querySelector("[data-meta]");
+      if (!iso) { m.textContent = ""; return; }
+      const days = (Date.now() - new Date(iso).getTime()) / 86400000;
+      m.textContent = "Last push " + ago(iso) + " (" + istStamp(iso) + ")";
+      m.classList.toggle("stale", days > STALE_DAYS && c.querySelector(".chip.off") === null);
+    });
+  } catch (e) {
+    document.querySelectorAll("[data-meta]").forEach(m => { m.textContent = ""; });
+    note.textContent = "Could not load last-update times (" + e.message + "). The links still work.";
+  }
+}
+
+try { render(); }
+catch (e) {
+  document.getElementById("app").innerHTML = '<div class="err">The dashboard list failed to render: ' + esc(e.message) + "</div>";
+}
+try { tickClock(); setInterval(tickClock, 30000); } catch (e) { /* cosmetic */ }
+refreshTimes(false);
+setInterval(() => refreshTimes(false), 5 * 60 * 1000);
+document.getElementById("refresh").addEventListener("click", () => refreshTimes(true));
+</script>
+</body>
+</html>

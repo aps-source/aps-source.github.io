@@ -1,0 +1,5 @@
+# Only index.html is published. Tooling stays local.
+*
+!index.html
+!.gitignore
+!.nojekyll
