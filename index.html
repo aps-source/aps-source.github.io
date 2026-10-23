@@ -114,14 +114,15 @@ footer code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px
    note: shown instead of a description for entries in the archive section        */
 const OWNER = "aps-source";
 const DASHBOARDS = [
-  { kind: "live", repo: "nifty-cpr-ladder-dashboard", page: "", name: "Nifty 3-min CPR Ladder",
-    desc: "NIFTY + SENSEX tuned live engine - real orders.", links: [["Trades", "trades.html"]] },
   { kind: "live", repo: "tv-composite-v7-dashboard", page: "", name: "TV Composite v7",
     desc: "NIFTY + SENSEX ITM options from the TradingView composite - pre-checked, automatic ordering.",
     links: [["Cockpit", "cockpit.html"], ["Trades", "trades.html"], ["F&O universe backtest", "universe.html"]] },
   { kind: "paper", repo: "nifty-range-breakout-dashboard", page: "", name: "NIFTY Range Breakout",
     desc: "Multi-day range breakout, daily bars: NIFTY + SENSEX - paper only, no orders.", links: [["F&O universe backtest", "universe.html"]] },
 
+  { kind: "paper", repo: "nifty-cpr-ladder-dashboard", page: "", name: "Nifty 3-min CPR Ladder",
+    desc: "NIFTY + SENSEX tuned CPR-ladder strategy - paper only, no orders (converted from real-money 2026-10-14).",
+    links: [["Trades", "trades.html"]] },
   { kind: "paper", repo: "hull-suite-paper-dashboard", page: "", name: "Hull Suite",
     desc: "HMA / EHMA positional strategies, NIFTY + SENSEX - paper only, no orders (converted from real-money 2026-10-22).",
     links: [["Trades", "trades.html"], ["Backtest", "backtest.html"]] },
