@@ -144,6 +144,9 @@ const DASHBOARDS = [
   { kind: "scanner", repo: "mcx-scanner-dashboard", page: "stock_scanner_dashboard.html", name: "MCX Stocks MWD",
     desc: "MCX mini-futures scanner (crude, gold, silver, natural gas). Signals only.",
     links: [["Signal log", "signal_log.html"]] },
+  { kind: "scanner", repo: "nifty-futures-dashboard", page: "", name: "Nifty Futures",
+    desc: "NIFTY futures OI x price quadrant tracker, 3/5/15/60-min MTF decision + option-chain levels. Signals only.",
+    links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
 
   { kind: "off", repo: "astro-dashboard", page: "", name: "Astro",
     note: "Time-triggered index option buying. Not updating: its source folder and scheduled task are gone." },
