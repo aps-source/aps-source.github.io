@@ -135,6 +135,9 @@ const DASHBOARDS = [
   { kind: "paper", repo: "crudeoilm-4h-setup-paper-dashboard", page: "", name: "4H Setup CRUDEOILM",
     desc: "4H liquidity sweep + fair value gap, 15m entry, 3R target - MCX mini crude, 1 lot, paper only. Backtest only 7 trades (Jun-Oct 2026).",
     links: [] },
+  { kind: "paper", repo: "nifty-futures-dashboard", page: "", name: "Nifty Futures",
+    desc: "NIFTY futures OI x price quadrant tracker, 3/5/15/60-min MTF decision. Paper: buys 1-OTM NIFTY Call/Put on STRONG signals, 1 lot, flip/15:25 exit. Telegram alerts.",
+    links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
 
   { kind: "scanner", repo: "mwd-scanner-dashboard", page: "stock_scanner_dashboard.html", name: "F&O Stocks MWD",
     desc: "F&O stock option scanner - Monthly/Weekly/Daily CPR + EMA composite. Signals only.",
@@ -144,9 +147,6 @@ const DASHBOARDS = [
   { kind: "scanner", repo: "mcx-scanner-dashboard", page: "stock_scanner_dashboard.html", name: "MCX Stocks MWD",
     desc: "MCX mini-futures scanner (crude, gold, silver, natural gas). Signals only.",
     links: [["Signal log", "signal_log.html"]] },
-  { kind: "scanner", repo: "nifty-futures-dashboard", page: "", name: "Nifty Futures",
-    desc: "NIFTY futures OI x price quadrant tracker, 3/5/15/60-min MTF decision + option-chain levels. Signals only.",
-    links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
 
   { kind: "off", repo: "astro-dashboard", page: "", name: "Astro",
     note: "Time-triggered index option buying. Not updating: its source folder and scheduled task are gone." },
