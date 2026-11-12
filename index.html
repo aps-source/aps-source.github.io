@@ -139,6 +139,10 @@ const DASHBOARDS = [
     desc: "NIFTY opening-range breakout + retest + 15m pivot regime; CE long / PE short option buying only. PA_BASE vs PA_OC (basket OI gate, observation). Spot backtest Jan 2024-Nov 2026: 37 trades, PF 0.61 - forward paper test. Telegram alerts.",
     links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
 
+  { kind: "paper", repo: "aps-source-cpr-paper-dashboard", page: "", name: "CPR (SVR + RVR)",
+    desc: "Previous-day CPR / R1-S1 / PDH-PDL + VWAP. A] SVR long (NIFTY + CRUDEOILM, 15m) buys ATM CE; B] RVR short (NIFTY, 60m, narrow CPR) buys ATM PE. Paper only, 1 lot, live option fills. NIFTY 08:59-15:40, CRUDEOILM to 23:35.",
+    links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
+
   { kind: "off", repo: "astro-dashboard", page: "", name: "Astro",
     note: "Time-triggered index option buying. Not updating: its source folder and scheduled task are gone." },
   { kind: "off", repo: "mwd-scanner-dashboard", page: "stock_scanner_dashboard.html", name: "F&O Stocks MWD",
