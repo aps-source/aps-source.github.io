@@ -133,9 +133,6 @@ const DASHBOARDS = [
   { kind: "paper", repo: "nifty-oc-signal-paper-dashboard", page: "", name: "NIFTY OC Signal",
     desc: "ORB15min+CPR, pure reversal exit (live since 2026-11-11) - paper only, NIFTY. Replaces the old option-chain composite model, which found no edge (coin-flip win rate) and now only runs for comparison logging.",
     links: [["Trades", "trades.html"], ["Legacy signal history", "signal_log.html"], ["OCORBCPR backtest", "ocorbcpr.html"], ["OCORBCPR signal history", "ocorbcpr_signal_log.html"]] },
-  { kind: "paper", repo: "crudeoilm-4h-setup-paper-dashboard", page: "", name: "4H Setup CRUDEOILM",
-    desc: "4H liquidity sweep + fair value gap, 15m entry, 3R target - MCX mini crude, 1 lot, paper only. Backtest only 7 trades (Jun-Oct 2026).",
-    links: [] },
   { kind: "paper", repo: "nifty-futures-dashboard", page: "", name: "Nifty Futures",
     desc: "NIFTY futures OI x price quadrant tracker, 3/5/15/60-min MTF decision. Paper: buys 1-OTM NIFTY Call/Put on STRONG signals, 1 lot, flip/15:25 exit. Telegram alerts.",
     links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
@@ -144,6 +141,8 @@ const DASHBOARDS = [
     links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
 
 
+  { kind: "off", repo: "crudeoilm-4h-setup-paper-dashboard", page: "", name: "4H Setup CRUDEOILM",
+    desc: "4H liquidity sweep + FVG, 15m entry, 3R - MCX mini crude paper.", note: "On hold since 17 Nov 2026 (2 paper trades, +Rs 2,892). Page shows the last state." },
   { kind: "off", repo: "aps-source-cpr-paper-dashboard", page: "", name: "CPR (SVR + RVR)",
     note: "CPR / R1-S1 / PDH-PDL + VWAP paper trader: A] SVR long (NIFTY + CRUDEOILM) ATM CE, B] RVR short (NIFTY, narrow CPR) ATM PE. On hold since 2026-11-17 (project folder moved to Hold On, paper loop task disabled) -- not retired, to be resumed later.",
     links: [["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
