@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-20T14:42:25",
+ "updated": "2026-11-20T15:00:26",
  "date": "2026-11-20",
  "mode": "LIVE",
  "paused": false,
@@ -11,10 +11,10 @@
   "bc": 25309.55
  },
  "last_bar": {
-  "time": "14:42",
-  "spot": 25751.65,
+  "time": "15:00",
+  "spot": 25765.4,
   "orb": 1,
-  "bscore": 0,
+  "bscore": 1,
   "fscore": 2
  },
  "position": null,
