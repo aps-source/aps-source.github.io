@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Option + Futures</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:#eceff8; --surface-1:#ffffff; --surface-2:#f3f5fb;
+    --text-primary:#0e1320; --text-secondary:#4f5a74; --text-muted:#76829c;
+    --gridline:#e2e7f1; --border:rgba(14,19,32,0.10);
+    --shadow:0 1px 2px rgba(14,19,32,0.06), 0 8px 24px rgba(40,50,110,0.08);
+    --brand-a:#4338ca; --brand-b:#7c3aed; --brand-c:#0d9488; --accent:#4f46e5;
+    --call:#2563eb; --put:#d6336c;
+    --good:#12a150; --warning:#c77d00; --critical:#dc3545;
+    --slate-1:#1b2340; --slate-2:#2d3a66;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page:#090c14; --surface-1:#131a29; --surface-2:#1a2336;
+      --text-primary:#eef1f9; --text-secondary:#a0abc4; --text-muted:#7f8aa3;
+      --gridline:#253048; --border:rgba(238,241,249,0.11);
+      --shadow:0 1px 2px rgba(0,0,0,0.4), 0 10px 28px rgba(0,0,0,0.35);
+      --brand-a:#4f46e5; --brand-b:#8b5cf6; --brand-c:#14b8a6; --accent:#9b8cf3;
+      --call:#4a8cf0; --put:#e0578a;
+      --good:#2bc85a; --warning:#f2b636; --critical:#f0645f;
+      --slate-1:#0f1630; --slate-2:#26305a;
+    }
+  }
+  * { box-sizing:border-box; }
+  html { font-size: clamp(15px, 0.55vw + 9px, 19px); }
+  body {
+    margin:0; color:var(--text-primary);
+    font-family: system-ui,-apple-system,"Segoe UI",sans-serif; line-height:1.4;
+    background:
+      radial-gradient(1100px 480px at 8% -8%, color-mix(in srgb, var(--brand-b) 16%, transparent), transparent 70%),
+      radial-gradient(900px 480px at 100% 0%, color-mix(in srgb, var(--brand-c) 14%, transparent), transparent 70%),
+      var(--page);
+    background-attachment: fixed;
+  }
+  b { font-variant-numeric: tabular-nums; }
+  a { color: var(--accent); }
+
+  .hero { background: linear-gradient(115deg, var(--brand-a) 0%, var(--brand-b) 52%, var(--brand-c) 100%);
+    color:#fff; padding:1.05rem clamp(14px,2vw,32px) 0.9rem; box-shadow:0 6px 26px rgba(67,56,202,0.28); }
+  .hero-inner { max-width:1500px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px 24px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:center; gap:0.9rem; }
+  .logo { width:2.5rem; height:2.5rem; border-radius:0.8rem; background:rgba(255,255,255,0.18); display:grid; place-items:center; font-size:1.35rem; backdrop-filter:blur(4px); }
+  h1 { font-size:1.45rem; margin:0; font-weight:800; letter-spacing:-0.015em; }
+  .tag { font-size:0.86rem; opacity:0.88; margin-top:1px; }
+  .hero-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .hero-pill { background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.28); padding:0.32rem 0.75rem; border-radius:999px; font-size:0.82rem; font-variant-numeric:tabular-nums; color:#fff; text-decoration:none; }
+  a.btn { background:#fff; color:var(--brand-a); text-decoration:none; font-weight:700; font-size:0.88rem; padding:0.45rem 0.95rem; border-radius:999px; box-shadow:0 2px 10px rgba(0,0,0,0.18); }
+  .live-clock { text-align:right; font-variant-numeric:tabular-nums; }
+  .live-clock .d { font-size:0.86rem; font-weight:700; }
+  .live-clock .t { font-size:1.15rem; font-weight:800; letter-spacing:0.01em; }
+
+  .st-pill { display:inline-flex; align-items:center; gap:0.35rem; font-weight:700; font-size:0.78rem; padding:0.15rem 0.55rem; border-radius:999px; }
+  .st-pill.live { background:color-mix(in srgb, var(--good) 16%, var(--surface-1)); color:var(--good); }
+  .st-pill.stale { background:color-mix(in srgb, var(--critical) 16%, var(--surface-1)); color:var(--critical); }
+  .hero .st-pill { background:rgba(255,255,255,0.2); color:#fff; }
+  .dot { display:inline-block; width:0.55rem; height:0.55rem; border-radius:50%; background:currentColor; flex:none; }
+  .st-pill.live .dot { animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);} 60% { box-shadow:0 0 0 6px transparent;} }
+
+  .page { max-width:1500px; margin:0 auto; padding:1.1rem clamp(14px,2vw,32px) 2rem; }
+
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(165px,100%),1fr)); gap:0.9rem; margin-bottom:1rem; }
+  .kpi { position:relative; overflow:hidden; background:var(--surface-1); border:1px solid var(--border); border-radius:1rem; padding:0.95rem 1.1rem; box-shadow:var(--shadow); }
+  .kpi::before { content:""; position:absolute; inset:0 auto 0 0; width:5px; background:var(--kc, var(--accent)); }
+  .kpi .k { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-muted); font-weight:700; }
+  .kpi .v { font-size:1.45rem; font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; margin-top:0.1rem; line-height:1.15; }
+  .kpi .s { font-size:0.82rem; color:var(--text-secondary); margin-top:0.15rem; font-variant-numeric:tabular-nums; }
+  .kpi.good { --kc:var(--good); } .kpi.bad { --kc:var(--critical); } .kpi.warn { --kc:var(--warning); }
+  .s.good { color:var(--good); } .s.bad { color:var(--critical); }
+
+  .decisions { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:0.9rem; margin-bottom:1rem; }
+  .decision { display:flex; align-items:center; gap:1rem; padding:1rem 1.3rem; border-radius:1.1rem; color:#fff; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,0.14); }
+  .decision .glyph { width:3.1rem; height:3.1rem; border-radius:50%; background:rgba(255,255,255,0.2); display:grid; place-items:center; font-size:1.5rem; font-weight:800; flex:none; }
+  .decision .mi-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; opacity:0.9; font-weight:700; }
+  .decision .mi-action { font-size:1.75rem; font-weight:800; line-height:1.15; }
+  .decision .mi-meta { font-size:0.85rem; opacity:0.92; margin-top:0.15rem; }
+  .decision.CE { background:linear-gradient(120deg, color-mix(in srgb, var(--call) 72%, #000), var(--call)); }
+  .decision.PE { background:linear-gradient(120deg, color-mix(in srgb, var(--put) 72%, #000), var(--put)); }
+  .decision.PENDING { background:linear-gradient(120deg, var(--slate-1), var(--slate-2)); }
+
+  .card { background:var(--surface-1); border:1px solid var(--border); border-radius:1rem; padding:1.05rem 1.2rem; box-shadow:var(--shadow); margin-bottom:1rem; min-width:0; }
+  .card h2 { font-size:0.74rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin:0 0 0.7rem; font-weight:800; }
+  .split { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:0.9rem; }
+
+  .lvl-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0.55rem; margin-top:0.6rem; }
+  .lvl { border-radius:0.75rem; padding:0.5rem 0.7rem; background:var(--surface-2); border-left:4px solid var(--c, var(--text-muted)); }
+  .lvl .l { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:700; }
+  .lvl .n { font-size:1.25rem; font-weight:800; font-variant-numeric:tabular-nums; }
+  .lvl .d { font-size:0.72rem; color:var(--text-secondary); }
+  .lvl.res { --c:var(--critical); } .lvl.mp { --c:var(--warning); } .lvl.sup { --c:var(--good); } .lvl.pcr { --c:var(--brand-c); } .lvl.spot { --c:var(--accent); }
+
+  table { width:100%; border-collapse:collapse; font-size:0.86rem; }
+  td,th { padding:0.3rem 0.4rem; text-align:right; border-bottom:1px solid var(--gridline); font-variant-numeric:tabular-nums; }
+  td:first-child, th:first-child { text-align:left; }
+  th { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); }
+  .up { color:var(--good); } .dn { color:var(--critical); } .nt { color:var(--warning); }
+
+  .chk { padding:0; margin:0; }
+  .chk li { list-style:none; padding:0.28rem 0; border-top:1px solid var(--gridline); font-size:0.88rem; color:var(--text-secondary); }
+  .chk li:first-child { border-top:none; }
+
+  .chart { width:100%; height:440px; }
+  .full { float:right; font-size:0.78rem; font-weight:700; }
+  footer { color:var(--text-muted); font-size:0.8rem; max-width:1500px; margin:0 auto; padding:0 clamp(14px,2vw,32px) 2rem; }
+  .sig { max-height:320px; overflow:auto; }
+  @media (max-width:700px){ .chart{height:320px} }
+  .decision.NONE { background:linear-gradient(120deg, var(--slate-1), var(--slate-2)); }
+  .verdict .mi-action { font-size:2.2rem; }
+  .vote { display:flex; justify-content:space-between; align-items:baseline; gap:0.5rem; padding:0.35rem 0; border-top:1px solid var(--gridline); font-size:0.9rem; }
+  .vote:first-child { border-top:none; }
+  .vote .r { font-weight:800; font-variant-numeric:tabular-nums; text-align:right; }
+  .note { font-size:0.84rem; color:var(--text-secondary); text-transform:none; letter-spacing:0; font-weight:400; }
+</style>
+</head>
+<body>
+<!--main-dashboard-link--><div id="main-dashboard-link" data-mode="bar" style="box-sizing:border-box;width:100%;padding:7px 14px;background:#0f172a;font:600 12px/1.3 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;text-align:left"><a href="https://aps-source.github.io/" style="color:#e2e8f0;text-decoration:none">&#9666; Main dashboard</a></div><!--/main-dashboard-link-->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="brand">
+      <div class="logo">&#129517;</div>
+      <div>
+        <h1>Option + Futures</h1>
+        <div class="tag">NIFTY OC Signal (ORB15+CPR) &times; Nifty Futures (OI quadrant MTF) &middot; one CE/PE call</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <span id="live" class="st-pill stale"><span class="dot"></span><span id="live-txt">&hellip;</span></span>
+      <a class="hero-pill" href="../nifty-oc-signal-paper-dashboard/">OC Signal</a>
+      <a class="hero-pill" href="../nifty-futures-dashboard/">Nifty Futures</a>
+      <a class="btn" href="https://aps-source.github.io/">&#9666; Main dashboard</a>
+      <div class="live-clock"><div class="d" id="clock-d"></div><div class="t" id="clock-t"></div></div>
+    </div>
+  </div>
+  <details class="rules" style="max-width:1500px;margin:0.55rem auto 0;font-size:0.83rem">
+    <summary style="cursor:pointer;font-weight:600">Combined rule</summary>
+    <p><b>Option vote</b> = ORB15+CPR: CE when spot is above the 09:15-09:30 high AND CPR TC, PE when below the low AND CPR BC, else flat.<br>
+    <b>Futures vote</b> = MTF score (+1/-1 per 3/5/15/60-min bar by price direction) plus fresh OI build-up (LONG BUILDUP / SHORT BUILDUP bars).<br>
+    <b>BUY CALL</b> = option vote CE and futures confirm (score &gt; 0 or any LONG BUILDUP). <b>BUY PUT</b> = mirror.
+    Futures against = <b>NO TRADE (conflict)</b>. Option flat = <b>NO TRADE</b>. Exit when the option vote flips the other way, or 15:25.</p>
+    <p>Research, 58 sessions 26 Aug - 19 Nov 2026 (NIFTY points, 4 pts cost): ORB15+CPR alone +951 pts PF 1.40; with OI build-up confirm +1210 pts PF 1.60, 62% win, 56 trades.
+    Not statistically significant (t 1.34), and 26 Aug - 7 Oct was negative. A lean, not a proven edge.</p>
+  </details>
+</div>
+<div class="page">
+  <div class="decisions">
+    <div id="verdict" class="decision verdict NONE"><div class="glyph" id="v-glyph">&hellip;</div>
+      <div><div class="mi-label">Combined suggestion</div><div class="mi-action" id="v-action">Loading</div><div class="mi-meta" id="v-meta"></div></div></div>
+  </div>
+  <div class="split">
+    <div class="card"><h2>Option vote &middot; ORB15+CPR</h2><div id="opt"></div></div>
+    <div class="card"><h2>Futures vote &middot; OI &times; price MTF</h2><div id="fut"></div></div>
+  </div>
+  <div class="card"><h2>Levels</h2><div class="lvl-grid" id="lvls"></div></div>
+  <div class="card"><h2>NIFTY 3-min <span class="note">(OR15 + CPR + max OI lines)</span></h2><div id="chart" class="chart"></div></div>
+  <div class="split">
+    <div class="card"><h2>Paper positions in the two source projects</h2><div id="pos"></div></div>
+    <div class="card"><h2>Feed status</h2><ul class="chk" id="chk"></ul></div>
+  </div>
+</div>
+<footer>Reads <code>nifty-futures-dashboard/data.json</code> and <code>nifty-oc-signal-paper-dashboard/live_state.json</code> every 30 s. Suggestion only, paper; no orders.</footer>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const f1 = n => n==null ? '-' : Number(n).toLocaleString('en-IN',{maximumFractionDigits:1});
+const sgn = n => (n>0?'+':'') + n;
+const STALE_MIN = 10;  // OC feed as_of lags its 4-min tick by up to ~8 min
+function tickClock(){
+  const now = new Date();
+  $('clock-d').textContent = now.toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata',weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+  $('clock-t').textContent = now.toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false}) + ' IST';
+}
+setInterval(tickClock,1000); tickClock();
+const ageMin = iso => (Date.now() - new Date(iso).getTime())/60000;
+
+// dir: option vote CE/PE/null; score: futures MTF score; bull/bear: fresh build-up TF counts
+function verdict(dir, score, bull, bear){
+  if(!dir) return {k:'NONE', a:'NO TRADE', why:'Spot inside opening range / CPR - option vote flat'};
+  const s = dir==='CE' ? 1 : -1, same = s>0 ? bull : bear, opp = s>0 ? bear : bull;
+  if(s*score > 0 || same > 0)
+    return {k:dir, a: s>0 ? 'BUY CALL' : 'BUY PUT',
+      why:`Option ${dir} + futures score ${sgn(score)}` + (same ? `, ${same} fresh ${s>0?'long':'short'} build-up TF` : ', no fresh build-up (weaker)')};
+  if(s*score < 0) return {k:'NONE', a:'NO TRADE', why:`Conflict: option ${dir} but futures score ${sgn(score)}` + (opp ? `, ${opp} opposite build-up` : '')};
+  return {k:'NONE', a:'WAIT', why:`Option ${dir}, futures neutral (score 0, no build-up)`};
+}
+
+let chart, series, lines = [];
+function drawChart(rows, o, oc){
+  if(!window.LightweightCharts || !rows || !rows.length) return;
+  if(!chart){
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    chart = LightweightCharts.createChart($('chart'), {autoSize:true,
+      layout:{background:{color:'transparent'},textColor:dark?'#7f8aa3':'#76829c'},
+      grid:{vertLines:{color:dark?'#253048':'#e2e7f1'},horzLines:{color:dark?'#253048':'#e2e7f1'}},
+      timeScale:{timeVisible:true,secondsVisible:false}});
+    series = chart.addCandlestickSeries({upColor:'#12a150',downColor:'#dc3545',borderUpColor:'#12a150',borderDownColor:'#dc3545',wickUpColor:'#12a150',wickDownColor:'#dc3545'});
+  }
+  series.setData(rows.map(r=>({time:r.time+19800, open:r.open, high:r.high, low:r.low, close:r.close})));
+  lines.forEach(l => series.removePriceLine(l)); lines = [];
+  const add = (p, t, c, st) => p!=null && lines.push(series.createPriceLine({price:p, title:t, color:c, lineWidth:1, lineStyle:st, axisLabelVisible:true}));
+  if(o){ add(o.or_high,'OR15 H','#2563eb',0); add(o.or_low,'OR15 L','#d6336c',0); add(o.cpr_tc,'CPR TC','#7c3aed',2); add(o.cpr_bc,'CPR BC','#7c3aed',2); }
+  if(oc){ add(oc.res_strike,'Max CE OI','#dc3545',1); add(oc.sup_strike,'Max PE OI','#12a150',1); }
+  chart.timeScale().fitContent();
+}
+
+async function get(url){ try { const r = await fetch(url+'?t='+Date.now()); return r.ok ? await r.json() : null; } catch(e){ return null; } }
+
+async function load(){
+  const [F, O] = await Promise.all([get('../nifty-futures-dashboard/data.json'), get('../nifty-oc-signal-paper-dashboard/live_state.json')]);
+  const fAge = F ? ageMin(F.updated.replace(' ','T')+'+05:30') : Infinity;
+  const oAge = O ? ageMin(O.as_of) : Infinity;
+  const fresh = fAge < STALE_MIN && oAge < STALE_MIN;
+  $('live').className = 'st-pill ' + (fresh ? 'live' : 'stale');
+  $('live-txt').textContent = fresh ? 'LIVE' : 'STALE';
+
+  const o = O && O.orb_cpr, dir = o && o.direction;
+  const mtf = (F && F.mtf) || {};
+  const tfs = Object.keys(mtf).sort((a,b)=>a-b);
+  const bull = tfs.filter(t=>mtf[t].cls==='LONG BUILDUP').length;
+  const bear = tfs.filter(t=>mtf[t].cls==='SHORT BUILDUP').length;
+  const score = F ? Number(F.decision_score)||0 : 0;
+  const v = (F && O) ? verdict(dir, score, bull, bear) : {k:'NONE', a:'NO DATA', why:'A source feed could not be read'};
+  const spot = (F && F.oc && F.oc.spot) || (O && O.spot);
+  const atm = spot ? Math.round(spot/50)*50 : null;
+  $('verdict').className = 'decision verdict ' + v.k;
+  $('v-glyph').innerHTML = v.k==='CE' ? '&#9650;' : v.k==='PE' ? '&#9660;' : '&#8212;';
+  $('v-action').textContent = v.a + (v.k!=='NONE' && atm ? `  ${atm} ${v.k}` : '');
+  $('v-meta').textContent = v.why + (fresh ? '' : ' - data STALE, do not act');
+
+  $('opt').innerHTML = !O ? '<p class="note">OC feed unavailable</p>' : `
+    <div class="vote"><span>Direction</span><span class="r ${dir==='CE'?'up':dir==='PE'?'dn':'nt'}">${dir||'flat'}</span></div>
+    <div class="vote"><span>Spot</span><span class="r">${f1(O.spot)}</span></div>
+    <div class="vote"><span>OR15 high / low</span><span class="r">${f1(o&&o.or_high)} / ${f1(o&&o.or_low)}</span></div>
+    <div class="vote"><span>CPR TC / BC</span><span class="r">${f1(o&&o.cpr_tc)} / ${f1(o&&o.cpr_bc)}</span></div>
+    <div class="vote"><span>Legacy OC composite</span><span class="r">${O.overall||'-'} <span class="note">(${O.confidence||''})</span></span></div>
+    <div class="vote"><span>Updated</span><span class="r">${new Date(O.as_of).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false})}</span></div>`;
+
+  const cc = c => /LONG BUILDUP|SHORT COVERING/.test(c) ? 'up' : 'dn';
+  $('fut').innerHTML = !F ? '<p class="note">Futures feed unavailable</p>' : `
+    <div class="vote"><span>Decision</span><span class="r ${score>0?'up':score<0?'dn':'nt'}">${F.decision} (${sgn(score)})</span></div>
+    <table><tr><th>TF</th><th>Bar</th><th>Quadrant</th><th>&Delta;price</th><th>&Delta;OI</th></tr>
+    ${tfs.map(t=>`<tr><td>${t}m</td><td>${mtf[t].time}</td><td class="${cc(mtf[t].cls)}">${mtf[t].cls}</td><td>${f1(mtf[t].d_price)}</td><td>${Number(mtf[t].d_oi).toLocaleString('en-IN')}</td></tr>`).join('')}</table>
+    <div class="vote"><span>Fresh build-up TFs (long / short)</span><span class="r">${bull} / ${bear}</span></div>
+    <div class="vote"><span>Updated</span><span class="r">${F.updated.slice(11,16)}</span></div>`;
+
+  const oc = F && F.oc;
+  $('lvls').innerHTML = !oc ? '' : `
+    <div class="lvl spot"><div class="l">Spot / ATM</div><div class="n">${f1(oc.spot)}</div><div class="d">ATM ${atm} &middot; exp ${oc.expiry}</div></div>
+    <div class="lvl res"><div class="l">Resistance (max CE OI)</div><div class="n">${f1(oc.res_strike)}</div><div class="d">${oc.res_pct}% away</div></div>
+    <div class="lvl sup"><div class="l">Support (max PE OI)</div><div class="n">${f1(oc.sup_strike)}</div><div class="d">${oc.sup_pct}% away</div></div>
+    <div class="lvl mp"><div class="l">Max pain</div><div class="n">${f1(oc.max_pain)}</div><div class="d">${oc.mp_pct}% away</div></div>
+    <div class="lvl pcr"><div class="l">PCR</div><div class="n">${oc.pcr}</div><div class="d">${oc.suggests||''}</div></div>`;
+
+  drawChart(F && F.charts && F.charts.NIFTY, o, oc);
+
+  const op = O && O.position, fp = F && F.paper && F.paper.open;
+  $('pos').innerHTML = `
+    <div class="vote"><span>OC Signal (ORB15+CPR)</span><span class="r">${op ? `${op.side} ${op.strike} @ ${op.entry_price} &rarr; ${op.last_known_price}` : 'flat'}</span></div>
+    <div class="vote"><span>Nifty Futures (STRONG)</span><span class="r">${fp ? `${fp.opt_type} ${fp.strike} @ ${fp.entry_px} (${fp.entry_t})` : 'flat'}</span></div>`;
+
+  const li = (ok, t) => `<li>${ok?'&#9989;':'&#10060;'} ${t}</li>`;
+  $('chk').innerHTML = li(fAge < STALE_MIN, `Futures feed ${isFinite(fAge) ? Math.round(fAge)+' min old' : 'missing'}`)
+    + li(oAge < STALE_MIN, `OC feed ${isFinite(oAge) ? Math.round(oAge)+' min old' : 'missing'} (updates every 4 min)`)
+    + li(o && o.or_high != null, 'Opening range 09:15-09:30 complete');
+}
+load(); setInterval(load, 30000);
+</script>
+</body>
+</html>
