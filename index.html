@@ -136,8 +136,8 @@ const DASHBOARDS = [
   { kind: "paper", repo: "nifty-futures-dashboard", page: "", name: "Nifty Futures",
     desc: "NIFTY futures OI x price quadrant tracker, 3/5/15/60-min MTF decision. Paper: buys 1-OTM NIFTY Call/Put on STRONG signals, 1 lot, flip/15:25 exit. Telegram alerts.",
     links: [["Trade log", "trades.html"], ["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
-  { kind: "paper", repo: "option-futures", page: "", name: "Option + Futures",
-    desc: "ORB15+CPR direction confirmed by fresh NIFTY futures OI build-up, 50 pt spot stop-loss, flip/15:24 exit. Replays today live from the OC Signal + Nifty Futures feeds: open position, entry, stop. Backtest 55 trades +1169 pts PF 1.68. Suggestion only.",
+  { kind: "live", repo: "option-futures", page: "", name: "Option + Futures",
+    desc: "ORB15+CPR direction confirmed by fresh NIFTY futures OI build-up, 50 pt spot stop-loss, flip/15:24 exit. Replays today live from the OC Signal + Nifty Futures feeds: open position, entry, stop. Backtest 55 trades +1169 pts PF 1.68. LIVE engine (real orders, 1 lot ATM) since 2026-11-20.",
     links: [["OC Signal", "../nifty-oc-signal-paper-dashboard/"], ["Nifty Futures", "../nifty-futures-dashboard/"]] },
 
 
