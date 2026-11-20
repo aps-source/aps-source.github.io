@@ -1,7 +1,7 @@
 {
- "updated": "2026-11-20T11:44:23",
+ "updated": "2026-11-20T11:51:32",
  "date": "2026-11-20",
- "mode": "PAPER",
+ "mode": "LIVE",
  "paused": false,
  "halt": false,
  "levels": {
@@ -11,11 +11,11 @@
   "bc": 25309.55
  },
  "last_bar": {
-  "time": "11:42",
-  "spot": 25562.65,
+  "time": "11:51",
+  "spot": 25553.8,
   "orb": 1,
-  "bscore": 1,
-  "fscore": 4
+  "bscore": -1,
+  "fscore": 0
  },
  "position": null,
  "stop_spot": null,

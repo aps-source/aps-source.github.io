@@ -118,6 +118,13 @@
   .vote:first-child { border-top:none; }
   .vote .r { font-weight:800; font-variant-numeric:tabular-nums; text-align:right; }
   .note { font-size:0.84rem; color:var(--text-secondary); text-transform:none; letter-spacing:0; font-weight:400; }
+  .tbl { overflow-x:auto; }
+  .tbl td, .tbl th { white-space:nowrap; }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr)); gap:0.9rem; }
+  .gallery figure { margin:0; } .gallery img { width:100%; border-radius:0.6rem; border:1px solid var(--border); display:block; }
+  .gallery figcaption { font-size:0.82rem; color:var(--text-secondary); margin-top:0.3rem; }
+  .filters { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.6rem; }
+  .filters select { font:inherit; padding:0.25rem 0.5rem; border-radius:0.5rem; border:1px solid var(--border); background:var(--surface-2); color:var(--text-primary); }
 </style>
 </head>
 <body>
@@ -133,6 +140,8 @@
     </div>
     <div class="hero-right">
       <span id="live" class="st-pill stale"><span class="dot"></span><span id="live-txt">&hellip;</span></span>
+      <a class="hero-pill" href="trades.html">Trade log</a>
+      <a class="hero-pill" href="backtest.html">Backtest</a>
       <a class="hero-pill" href="../nifty-oc-signal-paper-dashboard/">OC Signal</a>
       <a class="hero-pill" href="../nifty-futures-dashboard/">Nifty Futures</a>
       <a class="btn" href="https://aps-source.github.io/">&#9666; Main dashboard</a>
