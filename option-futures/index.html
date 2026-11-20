@@ -142,11 +142,12 @@
   <details class="rules" style="max-width:1500px;margin:0.55rem auto 0;font-size:0.83rem">
     <summary style="cursor:pointer;font-weight:600">Combined rule</summary>
     <p><b>Option vote</b> = ORB15+CPR: CE when spot is above the 09:15-09:30 high AND CPR TC, PE when below the low AND CPR BC, else flat.<br>
-    <b>Futures vote</b> = MTF score (+1/-1 per 3/5/15/60-min bar by price direction) plus fresh OI build-up (LONG BUILDUP / SHORT BUILDUP bars).<br>
-    <b>BUY CALL</b> = option vote CE and futures confirm (score &gt; 0 or any LONG BUILDUP). <b>BUY PUT</b> = mirror.
-    Futures against = <b>NO TRADE (conflict)</b>. Option flat = <b>NO TRADE</b>. Exit when the option vote flips the other way, or 15:25.</p>
-    <p>Research, 58 sessions 26 Aug - 19 Nov 2026 (NIFTY points, 4 pts cost): ORB15+CPR alone +951 pts PF 1.40; with OI build-up confirm +1210 pts PF 1.60, 62% win, 56 trades.
-    Not statistically significant (t 1.34), and 26 Aug - 7 Oct was negative. A lean, not a proven edge.</p>
+    <b>Futures OI build-up</b> = per 3/5/15/60-min closed futures bar: LONG BUILDUP (price up, OI up) +1, SHORT BUILDUP (price down, OI up) -1, covering/unwinding 0.<br>
+    <b>BUY CALL</b> = option vote CE and build-up &ge; +1. <b>BUY PUT</b> = option vote PE and build-up &le; -1. Entries 09:33-15:10, one position at a time, ATM strike.<br>
+    <b>Exit</b> = option vote flips the other way, OR <b>stop-loss: NIFTY spot 50 pts against entry</b> (3-min close), OR 15:24. After a stop-loss, no re-entry on that side today.<br>
+    The page replays today's 3-min bars with this exact rule, so the suggestion includes the open position, entry and stop level. Futures OI here comes from the live Nifty Futures tracker (20-s quotes); the backtest used Dhan 1-min history, so entry times can differ by a bar or two.</p>
+    <p>Backtest, 58 sessions 26 Aug - 19 Nov 2026 (NIFTY points, 4 pts cost): 55 trades, 47% win, +1169 pts, PF 1.68, worst trade -74, max drawdown -330 (without the stop: worst -274, drawdown -681).
+    Not statistically significant (t 1.51), and 26 Aug - 7 Oct was negative. A lean, not a proven edge.</p>
   </details>
 </div>
 <div class="page">
@@ -160,6 +161,7 @@
   </div>
   <div class="card"><h2>Levels</h2><div class="lvl-grid" id="lvls"></div></div>
   <div class="card"><h2>NIFTY 3-min <span class="note">(OR15 + CPR + max OI lines)</span></h2><div id="chart" class="chart"></div></div>
+  <div class="card"><h2>Today's trades by this rule <span class="note">(replayed from 3-min bars, NIFTY spot points)</span></h2><div id="today"></div></div>
   <div class="split">
     <div class="card"><h2>Paper positions in the two source projects</h2><div id="pos"></div></div>
     <div class="card"><h2>Feed status</h2><ul class="chk" id="chk"></ul></div>
@@ -180,19 +182,59 @@ function tickClock(){
 setInterval(tickClock,1000); tickClock();
 const ageMin = iso => (Date.now() - new Date(iso).getTime())/60000;
 
-// dir: option vote CE/PE/null; score: futures MTF score; bull/bear: fresh build-up TF counts
-function verdict(dir, score, bull, bear){
-  if(!dir) return {k:'NONE', a:'NO TRADE', why:'Spot inside opening range / CPR - option vote flat'};
-  const s = dir==='CE' ? 1 : -1, same = s>0 ? bull : bear, opp = s>0 ? bear : bull;
-  if(s*score > 0 || same > 0)
-    return {k:dir, a: s>0 ? 'BUY CALL' : 'BUY PUT',
-      why:`Option ${dir} + futures score ${sgn(score)}` + (same ? `, ${same} fresh ${s>0?'long':'short'} build-up TF` : ', no fresh build-up (weaker)')};
-  if(s*score < 0) return {k:'NONE', a:'NO TRADE', why:`Conflict: option ${dir} but futures score ${sgn(score)}` + (opp ? `, ${opp} opposite build-up` : '')};
-  return {k:'NONE', a:'WAIT', why:`Option ${dir}, futures neutral (score 0, no build-up)`};
+const STOP = 50, COST = 4;
+const hm = m => String(9 + Math.floor((m + 15) / 60)).padStart(2,'0') + ':' + String((m + 15) % 60).padStart(2,'0');
+const toMin = s => { const [h, mm] = s.split(':').map(Number); return (h - 9) * 60 + mm - 15; };
+
+// Replay today with the backtested rule (backtest.py variant G + exits.py 50 pt stop, same-side block after stop).
+// bars: NIFTY 3-min chart rows; lv: OR15/CPR levels; sig: futures closed-bar rows (time = bar close).
+function replay(bars, lv, sig, nowMin){
+  const cls = {};  // tf -> [[closeMin, +1/-1/0]]
+  for(const r of sig || []){
+    const v = r.classification==='LONG BUILDUP' ? 1 : r.classification==='SHORT BUILDUP' ? -1 : 0;
+    (cls[r.tf_min] = cls[r.tf_min] || []).push([toMin(r.time), v]);
+  }
+  const bscoreAt = m => Object.values(cls).reduce((t, rows) => {
+    let v = null; for(const [cm, x] of rows) if(cm <= m) v = x; return t + (v || 0); }, 0);
+  const trades = [], blocked = new Set();
+  let pos = null, last = null;
+  for(const b of bars){
+    const m = Math.round((b.time + 19800) % 86400 / 60) - 555 + 3;  // close minute since 09:15
+    if(m < 18 || m > nowMin || m > 369) continue;
+    const px = b.close, bs = bscoreAt(m);
+    const orb = (px > lv.or_high && px > lv.cpr_tc) ? 1 : (px < lv.or_low && px < lv.cpr_bc) ? -1 : 0;
+    last = {m, px, orb, bs};
+    if(pos){
+      const flip = orb === -pos.side, stop = pos.side * (px - pos.ep) <= -STOP, eod = m >= 369;
+      if(flip || stop || eod){
+        if(stop && !flip) blocked.add(pos.side);
+        trades.push({...pos, xm:m, xp:px, why: flip ? 'ORB15+CPR flip' : stop ? `${STOP} pt stop` : '15:24 EOD',
+                     pts: pos.side * (px - pos.ep) - COST});
+        pos = null;
+      }
+    }
+    if(!pos && m < 355 && orb && orb * bs >= 1 && !blocked.has(orb)) pos = {side:orb, em:m, ep:px, bs};
+  }
+  return {trades, pos, last, blocked};
+}
+
+function verdict(R, atm){
+  if(!R.last) return {k:'NONE', a:'WAIT', why:'Opening range 09:15-09:30 not complete yet'};
+  const L = R.last;
+  if(R.pos){
+    const s = R.pos.side, k = s > 0 ? 'CE' : 'PE', stop = R.pos.ep - s * STOP;
+    return {k, a: (s > 0 ? 'BUY CALL' : 'BUY PUT') + `  ${Math.round(R.pos.ep/50)*50} ${k}`,
+      why:`In since ${hm(R.pos.em)} @ spot ${f1(R.pos.ep)} | STOP spot ${f1(stop)} | now ${f1(L.px)} (${sgn(Math.round(s*(L.px-R.pos.ep)))} pts) | exit on flip or 15:24`};
+  }
+  if(L.m >= 355) return {k:'NONE', a:'NO NEW TRADE', why:'After 15:10 - no new entries today'};
+  if(!L.orb) return {k:'NONE', a:'NO TRADE', why:'Spot inside opening range / CPR - option vote flat'};
+  const dir = L.orb > 0 ? 'CE' : 'PE';
+  if(R.blocked.has(L.orb)) return {k:'NONE', a:'NO TRADE', why:`Option ${dir}, but a ${dir} trade already hit the stop today - no re-entry on this side`};
+  return {k:'NONE', a:'WAIT', why:`Option ${dir}, waiting for fresh futures ${L.orb>0?'long':'short'} build-up (build-up now ${sgn(L.bs)})`};
 }
 
 let chart, series, lines = [];
-function drawChart(rows, o, oc){
+function drawChart(rows, o, oc, pos){
   if(!window.LightweightCharts || !rows || !rows.length) return;
   if(!chart){
     const dark = matchMedia('(prefers-color-scheme: dark)').matches;
@@ -207,6 +249,7 @@ function drawChart(rows, o, oc){
   const add = (p, t, c, st) => p!=null && lines.push(series.createPriceLine({price:p, title:t, color:c, lineWidth:1, lineStyle:st, axisLabelVisible:true}));
   if(o){ add(o.or_high,'OR15 H','#2563eb',0); add(o.or_low,'OR15 L','#d6336c',0); add(o.cpr_tc,'CPR TC','#7c3aed',2); add(o.cpr_bc,'CPR BC','#7c3aed',2); }
   if(oc){ add(oc.res_strike,'Max CE OI','#dc3545',1); add(oc.sup_strike,'Max PE OI','#12a150',1); }
+  if(pos){ add(pos.ep,'Entry','#e3b341',0); add(pos.ep - pos.side*STOP,'STOP','#f0883e',0); }
   chart.timeScale().fitContent();
 }
 
@@ -226,13 +269,26 @@ async function load(){
   const bull = tfs.filter(t=>mtf[t].cls==='LONG BUILDUP').length;
   const bear = tfs.filter(t=>mtf[t].cls==='SHORT BUILDUP').length;
   const score = F ? Number(F.decision_score)||0 : 0;
-  const v = (F && O) ? verdict(dir, score, bull, bear) : {k:'NONE', a:'NO DATA', why:'A source feed could not be read'};
   const spot = (F && F.oc && F.oc.spot) || (O && O.spot);
   const atm = spot ? Math.round(spot/50)*50 : null;
+  // both feeds must describe the same session, else levels and bars don't match
+  const sameDay = F && O && o && o.or_high != null && F.updated.slice(0,10) === O.as_of.slice(0,10);
+  const ist = new Date(Date.now() + 19800000), nowMin = ist.getUTCHours()*60 + ist.getUTCMinutes() - 555;
+  const isToday = F && F.updated.slice(0,10) === ist.toISOString().slice(0,10);
+  const R = sameDay ? replay((F.charts && F.charts.NIFTY) || [], o, F.signals, isToday ? nowMin : 999) : null;
+  const v = R ? verdict(R, atm) : {k:'NONE', a:'NO DATA', why:'Feeds missing or from different sessions'};
   $('verdict').className = 'decision verdict ' + v.k;
   $('v-glyph').innerHTML = v.k==='CE' ? '&#9650;' : v.k==='PE' ? '&#9660;' : '&#8212;';
-  $('v-action').textContent = v.a + (v.k!=='NONE' && atm ? `  ${atm} ${v.k}` : '');
+  $('v-action').textContent = v.a;
   $('v-meta').textContent = v.why + (fresh ? '' : ' - data STALE, do not act');
+
+  const all = R ? [...R.trades, ...(R.pos && R.last ? [{...R.pos, xm:R.last.m, xp:R.last.px, why:'OPEN', pts:R.pos.side*(R.last.px-R.pos.ep)-COST}] : [])] : [];
+  $('today').innerHTML = !all.length ? '<p class="note">No trade yet today.</p>' :
+    `<table><tr><th>Side</th><th>Entry</th><th>Entry spot</th><th>Stop</th><th>Exit</th><th>Exit spot</th><th>Reason</th><th>Net pts</th></tr>` +
+    all.map(t => `<tr><td class="${t.side>0?'up':'dn'}">${t.side>0?'BUY CALL':'BUY PUT'}</td><td>${hm(t.em)}</td><td>${f1(t.ep)}</td>
+      <td>${f1(t.ep - t.side*STOP)}</td><td>${t.why==='OPEN'?'-':hm(t.xm)}</td><td>${f1(t.xp)}</td><td>${t.why}</td>
+      <td class="${t.pts>0?'up':'dn'}">${sgn(Math.round(t.pts*10)/10)}</td></tr>`).join('') +
+    `<tr><td colspan="7"><b>Total</b></td><td><b>${sgn(Math.round(all.reduce((a,t)=>a+t.pts,0)*10)/10)}</b></td></tr></table>`;
 
   $('opt').innerHTML = !O ? '<p class="note">OC feed unavailable</p>' : `
     <div class="vote"><span>Direction</span><span class="r ${dir==='CE'?'up':dir==='PE'?'dn':'nt'}">${dir||'flat'}</span></div>
@@ -258,7 +314,7 @@ async function load(){
     <div class="lvl mp"><div class="l">Max pain</div><div class="n">${f1(oc.max_pain)}</div><div class="d">${oc.mp_pct}% away</div></div>
     <div class="lvl pcr"><div class="l">PCR</div><div class="n">${oc.pcr}</div><div class="d">${oc.suggests||''}</div></div>`;
 
-  drawChart(F && F.charts && F.charts.NIFTY, o, oc);
+  drawChart(F && F.charts && F.charts.NIFTY, o, oc, R && R.pos);
 
   const op = O && O.position, fp = F && F.paper && F.paper.open;
   $('pos').innerHTML = `

@@ -137,7 +137,7 @@ const DASHBOARDS = [
     desc: "NIFTY futures OI x price quadrant tracker, 3/5/15/60-min MTF decision. Paper: buys 1-OTM NIFTY Call/Put on STRONG signals, 1 lot, flip/15:25 exit. Telegram alerts.",
     links: [["Trade log", "trades.html"], ["Signal history", "signal_log.html"], ["Backtest", "backtest.html"]] },
   { kind: "paper", repo: "option-futures", page: "", name: "Option + Futures",
-    desc: "Combines NIFTY OC Signal (ORB15+CPR) with Nifty Futures (OI quadrant MTF) into one BUY CALL / BUY PUT / NO TRADE call. Reads both live feeds, suggestion only. Hosted in this repo.",
+    desc: "ORB15+CPR direction confirmed by fresh NIFTY futures OI build-up, 50 pt spot stop-loss, flip/15:24 exit. Replays today live from the OC Signal + Nifty Futures feeds: open position, entry, stop. Backtest 55 trades +1169 pts PF 1.68. Suggestion only.",
     links: [["OC Signal", "../nifty-oc-signal-paper-dashboard/"], ["Nifty Futures", "../nifty-futures-dashboard/"]] },
 
 
