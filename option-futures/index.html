@@ -161,6 +161,7 @@
   </div>
   <div class="card"><h2>Levels</h2><div class="lvl-grid" id="lvls"></div></div>
   <div class="card"><h2>NIFTY 3-min <span class="note">(OR15 + CPR + max OI lines)</span></h2><div id="chart" class="chart"></div></div>
+  <div class="card"><h2>Live engine <span class="note" id="eng-mode"></span></h2><div id="eng"></div></div>
   <div class="card"><h2>Today's trades by this rule <span class="note">(replayed from 3-min bars, NIFTY spot points)</span></h2><div id="today"></div></div>
   <div class="split">
     <div class="card"><h2>Paper positions in the two source projects</h2><div id="pos"></div></div>
@@ -253,10 +254,29 @@ function drawChart(rows, o, oc, pos){
   chart.timeScale().fitContent();
 }
 
+// Real engine state (Live/Project Option + Futures Live/engine.py -> option-futures/live.json). Premiums only.
+function renderEngine(E){
+  if(!E){ $('eng-mode').textContent = ''; $('eng').innerHTML = '<p class="note">Engine has not published yet.</p>'; return; }
+  const age = Math.round((Date.now() - new Date(E.updated + '+05:30').getTime())/60000);
+  $('eng-mode').innerHTML = `(${E.mode === 'LIVE' ? '<b class="dn">LIVE - real orders</b>' : 'PAPER'}${E.paused ? ', PAUSED' : ''}${E.halt ? ', <b class="dn">HALTED</b>' : ''} &middot; updated ${E.updated.slice(11,16)}, ${age} min ago)`;
+  const p = E.position, row = t => `<tr><td>${t.date || E.date}</td><td class="${t.side>0?'up':'dn'}">${t.trading_symbol}</td><td>${hm(t.entry_min)}</td>
+    <td>${f1(t.entry_spot)}</td><td>${t.entry_premium ?? '-'}</td><td>${t.exit_time ? t.exit_time.slice(11,16) : '-'}</td><td>${t.exit_premium ?? '-'}</td>
+    <td>${t.exit_reason || 'OPEN'}</td><td class="${(t.exit_premium-t.entry_premium)>0?'up':'dn'}">${t.exit_premium!=null && t.entry_premium!=null ? sgn(Math.round((t.exit_premium-t.entry_premium)*100)/100) : '-'}</td><td>${t.mode}</td></tr>`;
+  const head = '<tr><th>Date</th><th>Contract</th><th>Entry</th><th>Entry spot</th><th>Entry prem</th><th>Exit</th><th>Exit prem</th><th>Reason</th><th>Prem pts</th><th>Mode</th></tr>';
+  const hist = (E.history || []).slice().reverse();
+  $('eng').innerHTML = (p ? `<div class="vote"><span>Open position</span><span class="r ${p.side>0?'up':'dn'}">${p.trading_symbol} @ ${p.entry_premium} (spot ${f1(p.entry_spot)}, stop spot ${f1(E.stop_spot)})</span></div>`
+      : '<div class="vote"><span>Open position</span><span class="r">flat</span></div>')
+    + (E.last_bar ? `<div class="vote"><span>Last bar seen by engine</span><span class="r">${E.last_bar.time} spot ${f1(E.last_bar.spot)}, option vote ${E.last_bar.orb>0?'CE':E.last_bar.orb<0?'PE':'flat'}, build-up ${sgn(E.last_bar.bscore)}</span></div>` : '')
+    + `<div class="vote"><span>Today</span><span class="r">${(E.today||[]).length} closed trade(s)</span></div>`
+    + `<table>${head}${(p ? [p] : []).map(row).join('')}${(E.today||[]).slice().reverse().map(row).join('')}</table>`
+    + (hist.length ? `<h2 style="margin-top:1rem">Engine trade history</h2><div class="sig"><table>${head}${hist.map(row).join('')}</table></div>` : '');
+}
+
 async function get(url){ try { const r = await fetch(url+'?t='+Date.now()); return r.ok ? await r.json() : null; } catch(e){ return null; } }
 
 async function load(){
-  const [F, O] = await Promise.all([get('../nifty-futures-dashboard/data.json'), get('../nifty-oc-signal-paper-dashboard/live_state.json')]);
+  const [F, O, E] = await Promise.all([get('../nifty-futures-dashboard/data.json'), get('../nifty-oc-signal-paper-dashboard/live_state.json'), get('live.json')]);
+  renderEngine(E);
   const fAge = F ? ageMin(F.updated.replace(' ','T')+'+05:30') : Infinity;
   const oAge = O ? ageMin(O.as_of) : Infinity;
   const fresh = fAge < STALE_MIN && oAge < STALE_MIN;
