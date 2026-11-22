@@ -3,7 +3,3 @@
 !index.html
 !.gitignore
 !.nojekyll
-!option-futures/
-!option-futures/index.html
-!option-futures/live.json
-!option-futures/**
