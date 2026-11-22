@@ -114,6 +114,9 @@ footer code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px
    note: shown instead of a description for entries in the archive section        */
 const OWNER = "aps-source";
 const DASHBOARDS = [
+  { kind: "live", repo: "nifty-futures-dashboard", page: "", name: "Nifty Futures",
+    desc: "REAL ORDERS: v2 book (5/15/60-min futures vote all agree, max 2/day) buys 1-OTM NIFTY Call/Put, 1 lot, since 2026-11-23. v1 and C keep running as paper for comparison. Telegram alerts.",
+    links: [["Trade log", "trades.html"], ["Signal history", "signal_log.html"]] },
   { kind: "live", repo: "tv-composite-v7-dashboard", page: "", name: "TV Composite v7",
     desc: "NIFTY + SENSEX ITM options from the TradingView composite - pre-checked, automatic ordering.",
     links: [["Cockpit", "cockpit.html"], ["Trades", "trades.html"], ["F&O universe backtest", "universe.html"]] },
@@ -133,9 +136,6 @@ const DASHBOARDS = [
   { kind: "paper", repo: "nifty-oc-signal-paper-dashboard", page: "", name: "NIFTY OC Signal",
     desc: "ORB15min+CPR, pure reversal exit (live since 2026-11-11) - paper only, NIFTY. Replaced the old option-chain composite model entirely 2026-11-22, after every OC confirmation filter tried against it backtested worse.",
     links: [["Trades", "trades.html"], ["Backtest", "ocorbcpr.html"], ["Signal history", "ocorbcpr_signal_log.html"]] },
-  { kind: "paper", repo: "nifty-futures-dashboard", page: "", name: "Nifty Futures",
-    desc: "NIFTY futures multi-timeframe vote (3/5/15/60-min). Three paper books side by side (v1, v2 5/15/60 max 2/day, C all-4 max 2/day) buying 1-OTM NIFTY Call/Put, 1 lot. Telegram alerts.",
-    links: [["Trade log", "trades.html"], ["Signal history", "signal_log.html"]] },
 
 
   { kind: "off", repo: "new-oc-paper-dashboard", page: "", name: "New OC (PA + Option Chain)",
