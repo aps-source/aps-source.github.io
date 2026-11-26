@@ -124,8 +124,8 @@ const DASHBOARDS = [
   { kind: "scanner", repo: "NIFTY-Structure-Map", page: "", name: "NIFTY Structure Map",
     desc: "NIFTY 15-min chart: daily CPR + type, PDH/PDL, nearest daily S/R, and the next session's CPR, R1/S1, CPR type and bias. Live 09:14-15:35 (online copy every 5 min). Chart only, no orders.",
     links: [] },
-  { kind: "paper", repo: "nifty-range-breakout-dashboard", page: "", name: "NIFTY Range Breakout",
-    desc: "Multi-day range breakout, daily bars: NIFTY + SENSEX - paper only, no orders.", links: [["F&O universe backtest", "universe.html"]] },
+  { kind: "off", repo: "nifty-range-breakout-dashboard", page: "", name: "NIFTY Range Breakout",
+    note: "Multi-day range breakout, daily bars: NIFTY + SENSEX, paper only. On hold since 2026-11-26 (project folder moved to Hold On, paper loop task disabled) -- not retired, to be resumed later.", links: [["F&O universe backtest", "universe.html"]] },
 
   { kind: "off", repo: "nifty-cpr-ladder-dashboard", page: "", name: "Nifty 3-min CPR Ladder",
     note: "NIFTY + SENSEX tuned CPR-ladder strategy, ATM options, paper only (real-money until 2026-10-14). On hold since 2026-11-26 (project folder moved to Hold On, paper loop + heartbeat + chart + EOD image tasks disabled) -- not retired, to be resumed later.",
@@ -133,8 +133,8 @@ const DASHBOARDS = [
   { kind: "off", repo: "orb30-paper-dashboard", page: "", name: "ORB30 Range Filter",
     note: "30-min opening-range breakout, CPR directional bias + ATR-adaptive cap (SENSEX) + trailing stop + sync-exit, NIFTY + SENSEX ATM options. On hold since 2026-11-26 (project folder moved to Hold On, paper loop + notifier tasks disabled, was briefly real-money 2026-11-18 to 2026-11-22 with zero signals fired) -- not retired, to be resumed later.",
     links: [["Trades", "trades.html"], ["Signal history", "signal_history.html"], ["Backtest", "backtest.html"]] },
-  { kind: "paper", repo: "nifty-oc-signal-paper-dashboard", page: "", name: "NIFTY OC Signal",
-    desc: "ORB15min+CPR, pure reversal exit (live since 2026-11-11) - paper only, NIFTY. Replaced the old option-chain composite model entirely 2026-11-22, after every OC confirmation filter tried against it backtested worse.",
+  { kind: "off", repo: "nifty-oc-signal-paper-dashboard", page: "", name: "NIFTY OC Signal",
+    note: "ORB15min+CPR, pure reversal exit, paper only, NIFTY. On hold since 2026-11-26 (project folder moved to Hold On, paper loop + option chain snapshot + EOD Telegram tasks disabled) -- not retired, to be resumed later.",
     links: [["Trades", "trades.html"], ["Backtest", "ocorbcpr.html"], ["Signal history", "ocorbcpr_signal_log.html"]] },
 
 
